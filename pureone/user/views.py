@@ -99,7 +99,7 @@ def verify_otp(request: Request):
             obj.save(update_fields=["attempts"])
 
             response = login_user({"email_number": obj.mobile}, request)
-            if response and "error" in response.data and "code" in response.data["error"] and response.data["error"]["code"] == status.HTTP_404_NOT_FOUND:
+            if response.status_code == status.HTTP_404_NOT_FOUND:
                 response = create_user(
                     {"mobile_number": obj.mobile, "password": secrets.token_urlsafe(8)}, request)
             return response

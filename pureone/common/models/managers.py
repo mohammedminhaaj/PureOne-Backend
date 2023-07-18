@@ -2,7 +2,6 @@ from typing import cast
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-
 from .queryset import RestorableQuerySet, SoftDeleteQuerySet
 
 
@@ -45,3 +44,8 @@ class RestorableManager(models.Manager):
     def get_queryset(self) -> models.QuerySet:
         """Retrieve all models with support for restoring deleted items."""
         return RestorableQuerySet(self.model, using=self._db)
+    
+class CartManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        """Retrieve all cart data whose products are not deleted"""
+        return super().get_queryset().filter(product_quantity__product__deleted_at__isnull = True, product_quantity__quantity__grams__lte = models.F("product_quantity__product__available_quantity"))

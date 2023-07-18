@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Quantity, ProductQuantity
+from .models import Category, Product, Quantity, ProductQuantity, Cart
 from common.admin import AuditedAdminMixin
 
 from django.forms import BaseInlineFormSet
@@ -30,3 +30,7 @@ class ProductAdmin(AuditedAdminMixin):
 @admin.register(ProductQuantity)
 class ProductQuantityAdmin(AuditedAdminMixin):
     list_display = ['product', 'quantity', 'price', 'original_price']
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ['user', 'product_quantity', 'created_at', 'modified_at']

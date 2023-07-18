@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.mobile_number}"
+        return f"{self.username or self.mobile_number}"
 
     class Meta:
         db_table = "auth_user"
