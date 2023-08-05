@@ -1,10 +1,10 @@
 
-from typing import Iterable, Optional
 from common.models import UserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
+from django.conf import settings
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -70,4 +70,23 @@ class UserOtp(models.Model):
 
     class Meta:
         db_table = "user_otp"
+        ordering = ["-id"]
+
+class UserLocation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    latitude = models.DecimalField(max_digits=19, decimal_places=16)
+    longitude = models.DecimalField(max_digits=19, decimal_places=16)
+    short_address = models.CharField(max_length = 256, verbose_name=_("Short Address"))
+    long_address = models.CharField(max_length = 512, verbose_name=_("Long Address"))
+    building = models.CharField(max_length = 64)
+    locality = models.CharField(max_length = 64)
+    landmark = models.CharField(max_length = 64, blank = True, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.user.username or self.user.mobile} - ({self.latitude}, {self.longitude})"
+
+    class Meta:
+        verbose_name = "User Location"
+        verbose_name_plural = "User Locations"
+        db_table = "user_location"
         ordering = ["-id"]

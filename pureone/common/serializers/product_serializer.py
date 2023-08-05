@@ -1,6 +1,7 @@
 from product.models import Product, ProductQuantity, Category, Quantity, Cart
 from rest_framework import serializers
 from typing import Any
+from .vendor_serializer import VendorSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -47,7 +48,7 @@ def get_product_quantities(obj: Any):
 
 class ProductOverviewSerializer(serializers.ModelSerializer):
 
-    vendor = serializers.CharField(source="vendor.display_name")
+    vendor = VendorSerializer(many = False, read_only = True)
     product_quantity = serializers.SerializerMethodField()
 
     def get_product_quantity(self, obj):
@@ -63,19 +64,12 @@ class ProductOverviewSerializer(serializers.ModelSerializer):
 
 
 class CartProduct(serializers.ModelSerializer):
-    vendor = serializers.CharField(source="vendor.display_name")
-    product_quantity = serializers.SerializerMethodField()
-
-    def get_product_quantity(self, obj):
-        product_quantities = get_product_quantities(obj)
-        serializer = ProductQuantitySerializer(
-            product_quantities, many=True)
-        return serializer.data
+    vendor = VendorSerializer(many = False, read_only = True)
 
     class Meta:
         model = Product
         fields = ["name", "display_name",
-                  "image", "vendor", "product_quantity"]
+                  "image", "vendor"]
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -85,4 +79,4 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['product', 'product_quantity']
+        fields = ['product', 'product_quantity', "quantity_count"]

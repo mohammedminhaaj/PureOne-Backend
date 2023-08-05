@@ -144,6 +144,6 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 80 * 1024 * 1024
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://192.168.0.188:3000',
+    'http://localhost',
+    'http://192.168.0.188',
 ]

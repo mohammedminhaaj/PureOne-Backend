@@ -1,6 +1,6 @@
 from common.serializers.user_serializer import ForgotPasswordSerializer, CreateAccountSerializer, CredentialLoginSerializer, OtpLoginSerializer, VerifyOtpSerializer, UpdateProfileSerializer
-from .models import UserOtp, User
-from .helpers import create_user, login_user
+from ..models import UserOtp, User
+from ..helpers import create_user, login_user
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -158,8 +158,6 @@ def logout(request: Request):
 def update_profile(request: Request):
     serializer = UpdateProfileSerializer(data = request.data, instance=request.user)
     if serializer.is_valid():
-        user = serializer.save()
-        print(user.email, user.username)
         return Response(data = {"details": "Profile updated successfully"}, status = status.HTTP_200_OK)
     else:
         return Response(data = {"details": constants.FORM_ERROR, "errors": serializer.errors}, status = status.HTTP_400_BAD_REQUEST)

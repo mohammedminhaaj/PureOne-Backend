@@ -2,5 +2,5 @@ from . import views
 from django.urls import path
 
 urlpatterns = [
-    path('get-initial-state/', views.get_initial_state, name='get_initial_state'),
+    path('get-home-screen/', views.get_home_screen, name='get_home_screen'),
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from user.models import User
+from user.models import User, UserLocation
 
 serializer_kwargs = {
     "credential": {
@@ -60,3 +60,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "mobile_number", "email"]
+
+class UserLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLocation
+        exclude = ["user"]

@@ -33,4 +33,4 @@ class ProductQuantityAdmin(AuditedAdminMixin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user', 'product_quantity', 'created_at', 'modified_at']
+    list_display = ['user', 'product_quantity', 'quantity_count', 'created_at', 'modified_at']
