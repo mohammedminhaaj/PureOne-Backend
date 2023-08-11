@@ -28,12 +28,14 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '192.168.0.187',
     '127.0.0.1',
+    '192.168.0.188'
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +50,8 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'vendor.apps.VendorConfig',
     'product.apps.ProductConfig',
+    'cart.apps.CartConfig',
+    'order.apps.OrderConfig',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +84,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'pureone.asgi.application'
 WSGI_APPLICATION = 'pureone.wsgi.application'
 
 
@@ -146,4 +151,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost',
     'http://192.168.0.188',
+    'http://localhost:53852',
 ]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

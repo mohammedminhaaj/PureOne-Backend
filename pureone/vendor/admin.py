@@ -9,4 +9,4 @@ class RegionAdmin(AuditedAdminMixin):
 @admin.register(Vendor)
 class VendorAdmin(AuditedAdminMixin):
     prepopulated_fields = {'name': ('display_name',)}
-    list_display = ['display_name','name', 'region', 'latitude', 'longitude', 'address', 'vendor_status']
+    list_display = ['display_name','name', 'region', 'latitude', 'longitude', 'address','contact', 'vendor_status']

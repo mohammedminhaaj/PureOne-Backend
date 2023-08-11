@@ -1,4 +1,4 @@
-from product.models import Product, ProductQuantity, Category, Quantity, Cart
+from product.models import Product, ProductQuantity, Category, Quantity
 from rest_framework import serializers
 from typing import Any
 from .vendor_serializer import VendorSerializer
@@ -41,18 +41,14 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["image", "display_name", "name", "product_quantity"]
 
 
-def get_product_quantities(obj: Any):
-    return ProductQuantity.objects.select_related("quantity").filter(product=obj, quantity__grams__lte=obj.available_quantity).order_by(
-        "quantity__grams").only("quantity_id", "quantity__grams", "quantity__display_name", "price", "original_price")
-
-
 class ProductOverviewSerializer(serializers.ModelSerializer):
 
     vendor = VendorSerializer(many = False, read_only = True)
     product_quantity = serializers.SerializerMethodField()
 
     def get_product_quantity(self, obj):
-        product_quantities = get_product_quantities(obj)
+        product_quantities = ProductQuantity.objects.select_related("quantity").filter(product=obj, quantity__grams__lte=obj.available_quantity).order_by(
+        "quantity__grams").only("quantity_id", "quantity__grams", "quantity__display_name", "price", "original_price")
         serializer = ProductQuantitySerializer(
             product_quantities, many=True)
         return serializer.data
@@ -63,20 +59,3 @@ class ProductOverviewSerializer(serializers.ModelSerializer):
                   "vendor", "product_quantity", "deleted_at"]
 
 
-class CartProduct(serializers.ModelSerializer):
-    vendor = VendorSerializer(many = False, read_only = True)
-
-    class Meta:
-        model = Product
-        fields = ["name", "display_name",
-                  "image", "vendor"]
-
-
-class CartSerializer(serializers.ModelSerializer):
-    product = CartProduct(
-        source='product_quantity.product', read_only=True)
-    product_quantity = ProductQuantitySerializer()
-
-    class Meta:
-        model = Cart
-        fields = ['product', 'product_quantity', "quantity_count"]

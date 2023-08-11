@@ -25,7 +25,7 @@ def add_edit_user_location(request: Request, user_location_id: str | None = None
         serializer = UserLocationSerializer(data=request.data)
     if serializer.is_valid():
         user_location = serializer.save(user=request.user)
-        return Response(data={"details": f"location {'added' if not user_location_id else 'updated'} successfully", "user_location": serializer.data}, status=status.HTTP_200_OK)
+        return Response(data={"details": f"location {'added' if not user_location_id else 'updated'} successfully", "user_location": serializer.data}, status=status.HTTP_201_CREATED)
     else:
         return Response(data={"details": constants.FORM_ERROR, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 

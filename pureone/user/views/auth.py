@@ -158,6 +158,7 @@ def logout(request: Request):
 def update_profile(request: Request):
     serializer = UpdateProfileSerializer(data = request.data, instance=request.user)
     if serializer.is_valid():
+        serializer.save()
         return Response(data = {"details": "Profile updated successfully"}, status = status.HTTP_200_OK)
     else:
         return Response(data = {"details": constants.FORM_ERROR, "errors": serializer.errors}, status = status.HTTP_400_BAD_REQUEST)

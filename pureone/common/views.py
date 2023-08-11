@@ -8,7 +8,8 @@ from common.serializers import BannerSerializer, ProductSerializer, CartSerializ
 from common.utils import haversine
 from .models import PromotionalBanner
 from vendor.models import Vendor
-from product.models import Product, Cart
+from product.models import Product
+from cart.models import Cart
 from django.db.models import F
 
 # Create your views here.

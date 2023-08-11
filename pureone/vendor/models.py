@@ -4,6 +4,7 @@ from common.models.managers import SoftDeleteManager, RestorableManager
 from common.models import MasterData
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
+from django.core.validators import RegexValidator
 
 # Create your models here.
 class Region(AuditedModel, SoftDeleteModel):
@@ -29,6 +30,7 @@ class Vendor(AuditedModel, SoftDeleteModel):
     latitude = models.DecimalField(max_digits=19, decimal_places=16)
     longitude = models.DecimalField(max_digits=19, decimal_places=16)
     address = models.TextField(max_length=1024)
+    contact = models.CharField(max_length=10, validators= [RegexValidator(r'^[0-9]*$', _("Invalid mobile number"))])
     vendor_status = models.ForeignKey(MasterData, on_delete=models.CASCADE, verbose_name=_("Vendor Status"), limit_choices_to=Q(master_category__name = "Vendor Status"))
 
     objects = SoftDeleteManager()
