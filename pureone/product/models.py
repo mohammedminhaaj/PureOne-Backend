@@ -3,6 +3,7 @@ from common.models.base import AuditedModel, SoftDeleteModel
 from common.models.managers import SoftDeleteManager, RestorableManager
 from django.utils.translation import gettext_lazy as _
 from vendor.models import Vendor
+from django.contrib.contenttypes.fields import GenericRelation
 
 # Create your models here.
 
@@ -57,6 +58,7 @@ class Product(AuditedModel, SoftDeleteModel):
         "product", "quantity"), verbose_name=_("Product Quantity"))
     available_quantity = models.PositiveIntegerField(
         verbose_name=_("Available Quantity"))
+    feedback = GenericRelation("order.OrderFeedback", related_query_name="product_feedback")
 
     objects = SoftDeleteManager()
     all_objects = RestorableManager()
@@ -87,7 +89,7 @@ class ProductQuantity(AuditedModel, SoftDeleteModel):
         verbose_name = 'Product Quantity'
         verbose_name_plural = 'Product Quantities'
         db_table = 'product_quantity'
-        ordering = ['-id']
+        ordering = ['quantity__grams']
         constraints = [models.UniqueConstraint(
             fields=("product", "quantity"), name="unique_product_quantity_mapping")]
 

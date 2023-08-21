@@ -15,6 +15,7 @@ class Cart(models.Model):
     quantity_count = models.PositiveIntegerField(default=1, verbose_name=_(
         "Quantity Count"), validators=[MinValueValidator(1, message=_("Quantity count can't be less than 1")), MaxValueValidator(10, message=_("Quantity count can't be greater than 10"))])
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    order_price = models.DecimalField(max_digits=7, decimal_places=2, null= True, blank= True)
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name=_("Created At"))
     modified_at = models.DateTimeField(

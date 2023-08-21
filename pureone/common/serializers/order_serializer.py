@@ -17,10 +17,14 @@ class OrderSerializer(serializers.ModelSerializer):
             return f"{obj.building}, {obj.locality}{f', {obj.landmark}' if obj.landmark else ''}"
         else:
             return obj.long_address
+        
+    def get_feedback_completed(self, obj):
+        return obj.has_feedback
 
     address = serializers.SerializerMethodField()
     cart = serializers.SerializerMethodField()
+    feedback_completed = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ["order_id", "order_status", "payment_mode", "amount", "address", "cart", "created_at", "latitude", "longitude", "delivery_instructions"]
+        fields = ["order_id", "order_status", "payment_mode", "amount", "delivery_charge", "address", "cart", "created_at", "latitude", "longitude", "delivery_instructions", "feedback_completed"]

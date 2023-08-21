@@ -20,4 +20,4 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['product', 'product_quantity', "quantity_count"]
+        fields = ['product', 'product_quantity', "quantity_count", "order_price"]

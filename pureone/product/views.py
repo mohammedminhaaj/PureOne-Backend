@@ -6,6 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from product.models import Product
 from common.serializers import ProductOverviewSerializer
 from rest_framework import status
+from order.models import OrderFeedback
+from django.db.models import Avg, OuterRef, Subquery
+from django.contrib.contenttypes.models import ContentType
 
 # Create your views here.
 
@@ -15,8 +18,16 @@ from rest_framework import status
 @permission_classes([IsAuthenticated])
 def get_product(request: Request, product_name: str):
     try:
+        # Subquery to get average rating for each product
+        average_rating_subquery = OrderFeedback.objects.filter(
+            content_type=ContentType.objects.get_for_model(Product),
+            object_id=OuterRef("pk")
+        ).values("object_id").annotate(
+            avg_rating=Avg("rating")
+        ).values("avg_rating")[:1]
+
         product = Product.all_objects.select_related("vendor", "vendor__vendor_status").prefetch_related(
-            "product_quantity").get(name=product_name)
+            "product_quantity").annotate(average_rating=Subquery(average_rating_subquery)).get(name=product_name)
         serializer = ProductOverviewSerializer(product, many=False)
         if (product.vendor.vendor_status.name == "Closed"):
             return Response({"details": "The vendor is currently closed. Please come back after some time.", "product": serializer.data}, status=status.HTTP_400_BAD_REQUEST)
