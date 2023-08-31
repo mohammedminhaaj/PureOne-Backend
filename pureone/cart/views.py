@@ -6,11 +6,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from product.models import ProductQuantity
 from .models import Cart
-from common.serializers import CartSerializer
+from common.serializers import CartSerializer, CouponSerializer
 from rest_framework import status
 from common import constants
-from common.utils import haversine
-from .helpers import get_delivery_charge
+from common.utils import get_nearby_vendors
+from .helpers import get_delivery_charge, validate_coupon, CouponError
 
 # Create your views here.
 @api_view(["GET"])
@@ -42,10 +42,7 @@ def get_cart(request: Request):
     latitude = request.query_params.get("lt")
     longitude = request.query_params.get("ln")
     if latitude and longitude:
-        nearby_vendor_list = haversine(float(latitude), float(
-            longitude), [(vendor.latitude, vendor.longitude,) for vendor in vendors])
-        nearby_vendors = {vendor for vendor in vendors if (
-            vendor.latitude, vendor.longitude) in nearby_vendor_list}
+        nearby_vendors = set(get_nearby_vendors(float(latitude), float(longitude), vendors))
     else:
         nearby_vendors = set()
 
@@ -134,3 +131,15 @@ def delete_cart_using_vendor_list(request: Request):
     Cart.objects.filter(user=request.user, product_quantity__product__vendor__display_name__in=request.data.get(
         "vendor_list")).delete()
     return Response(data={"details": "Items removed successfully."}, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def verify_coupon(request: Request):
+    coupon_code = request.data.get("coupon")
+    try:
+        coupon = validate_coupon(user=request.user, coupon_code=coupon_code)
+        serializer = CouponSerializer(coupon, many = False)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    except CouponError as e:
+        return Response(data={"details": e.message}, status=e.status)

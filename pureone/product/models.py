@@ -3,7 +3,6 @@ from common.models.base import AuditedModel, SoftDeleteModel
 from common.models.managers import SoftDeleteManager, RestorableManager
 from django.utils.translation import gettext_lazy as _
 from vendor.models import Vendor
-from django.contrib.contenttypes.fields import GenericRelation
 
 # Create your models here.
 
@@ -58,7 +57,6 @@ class Product(AuditedModel, SoftDeleteModel):
         "product", "quantity"), verbose_name=_("Product Quantity"))
     available_quantity = models.PositiveIntegerField(
         verbose_name=_("Available Quantity"))
-    feedback = GenericRelation("order.OrderFeedback", related_query_name="product_feedback")
 
     objects = SoftDeleteManager()
     all_objects = RestorableManager()
@@ -84,6 +82,16 @@ class ProductQuantity(AuditedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.product} - {self.quantity.display_name}"
+    
+    def save(self, *args, **kwargs):
+        try:
+            product_quantity = ProductQuantity.all_objects.get(product=self.product, quantity=self.quantity)
+            product_quantity.price = self.price
+            product_quantity.original_price = self.original_price
+            product_quantity.restore()
+            return
+        except ProductQuantity.DoesNotExist:
+            return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Product Quantity'

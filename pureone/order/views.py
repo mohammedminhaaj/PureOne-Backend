@@ -3,16 +3,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from cart.models import Cart
+from cart.models import Cart, CouponRedemption
 from rest_framework import status
 from common.models import MasterData
 from .models import Order, OrderFeedback
 from common.serializers.order_serializer import OrderSerializer
-from cart.helpers import get_delivery_charge
-from decimal import Decimal
+from cart.helpers import get_delivery_charge, validate_coupon, CouponError, get_discount_amount
 from product.models import Product
 from vendor.models import Vendor
 from django.db.models import Case, When, Value, BooleanField
+from decimal import Decimal
 
 # Create your views here.
 
@@ -47,6 +47,21 @@ def place_order_cash(request: Request):
     order_status = base_qs_dict.get("Placed")
     payment_mode = base_qs_dict.get("Cash")
 
+    delivery_charge = get_delivery_charge()
+    discount = None
+    coupon_redemption = None
+
+    # Check if any coupons have been applied and validate the same
+    coupon_code: str | None = request.data.get("coupon_code")
+    if coupon_code and coupon_code != "null" and coupon_code.strip() != "":
+        try:
+            coupon = validate_coupon(user=request.user, coupon_code=coupon_code)
+            discount = get_discount_amount(coupon=coupon, amount=amount, delivery_charge=delivery_charge)
+            if discount != Decimal(0.0):
+                coupon_redemption = CouponRedemption(coupon = coupon, user = request.user)
+        except CouponError as e:
+            return Response(data={"details": e.message, "coupon_error": True}, status=e.status)
+
     try:
         # Create the order object
         order = Order.objects.create(
@@ -54,7 +69,8 @@ def place_order_cash(request: Request):
             order_status=order_status,
             payment_mode=payment_mode,
             amount=amount,
-            delivery_charge=Decimal(get_delivery_charge()),
+            delivery_charge=delivery_charge,
+            discount = discount,
             latitude=request.data.get("latitude"),
             longitude=request.data.get("longitude"),
             short_address=request.data.get("short_address"),
@@ -66,15 +82,27 @@ def place_order_cash(request: Request):
         )
 
         # update cart objects with the newly created order object and order price
+        products_to_update = []
         for cart in carts:
             cart.order = order
             cart.order_price = cart.product_quantity.price
+            # Update the available quantity of the product as well
+            cart.product_quantity.product.available_quantity -= cart.product_quantity.quantity.grams
+            products_to_update.append(cart.product_quantity.product)
+
 
         Cart.objects.bulk_update(carts, ["order", "order_price"])
+        # Update available quantity
+        Product.objects.bulk_update(products_to_update, ["available_quantity"])
+
+        if coupon_redemption:
+            coupon_redemption.order = order
+            coupon_redemption.save()
+
 
         return Response(data={"details": "Order placed"}, status=status.HTTP_201_CREATED)
     except Exception:
-        return Response(data={"details": "Error occured while placing order"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={"details": "Error occured while placing order"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])
@@ -100,7 +128,7 @@ def get_previous_orders(request: Request):
     search_text = request.query_params.get("search_text")
     filter_query = {"user": request.user, "order_status__name__in": [
         "Delivered", "Undelivered", "Rejected"]}
-    if search_text != "" and len(search_text) >= 3:
+    if search_text.strip() != "" and len(search_text) >= 3:
         filter_query.update(
             {"cart__product_quantity__product__display_name__icontains": search_text})
     orders = Order.objects.prefetch_related("orderfeedback_set").filter(

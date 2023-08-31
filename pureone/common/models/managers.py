@@ -48,4 +48,4 @@ class RestorableManager(models.Manager):
 class CartManager(models.Manager):
     def get_queryset(self) -> models.QuerySet:
         """Retrieve all cart data whose products are not deleted"""
-        return super().get_queryset().filter(product_quantity__product__deleted_at__isnull = True, product_quantity__quantity__grams__lte = models.F("product_quantity__product__available_quantity"), order__isnull = True)
+        return super().get_queryset().filter(product_quantity__product__deleted_at__isnull = True, product_quantity__deleted_at__isnull=True, product_quantity__quantity__grams__lte = models.F("product_quantity__product__available_quantity"), order__isnull = True)

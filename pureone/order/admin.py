@@ -5,7 +5,7 @@ from common.admin import AuditedAdminMixin
 # Register your models here.
 @admin.register(Order)
 class OrderAdmin(AuditedAdminMixin):
-    list_display = ['order_id', 'user', 'order_status', 'payment_mode','amount', 'delivery_charge', 'long_address', 'building', 'locality', 'landmark', "delivered_at"]
+    list_display = ['order_id', 'user', 'order_status', 'payment_mode','amount', 'delivery_charge', 'discount','long_address', 'building', 'locality', 'landmark', "delivered_at"]
 
 @admin.register(OrderFeedback)
 class OrderFeedbackAdmin(AuditedAdminMixin):

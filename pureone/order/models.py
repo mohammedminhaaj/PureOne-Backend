@@ -36,6 +36,7 @@ class Order(AuditedModel, SoftDeleteModel):
     payment_mode = models.ForeignKey(MasterData, on_delete=models.CASCADE, verbose_name=_("Payment Mode"), limit_choices_to=models.Q(master_category__name = "Payment Mode"), related_name="md_payment_mode")
     amount = models.DecimalField(max_digits=7, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    discount = models.DecimalField(max_digits=7, decimal_places=2, default=0.0, null=True, blank = True)
     latitude = models.DecimalField(max_digits=19, decimal_places=16)
     longitude = models.DecimalField(max_digits=19, decimal_places=16)
     short_address = models.CharField(max_length = 256, verbose_name=_("Short Address"))
@@ -52,6 +53,13 @@ class Order(AuditedModel, SoftDeleteModel):
     @property
     def order_id(self):
         return f"Order #{self.id:07d}"
+    
+    @property
+    def total(self):
+        total = self.amount + self.delivery_charge
+        if self.discount:
+            total -= self.discount
+        return total
     
     def save(self, *args, **kwargs):
         #Set the delivered_at field to current time
